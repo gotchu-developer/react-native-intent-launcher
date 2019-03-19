@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -70,11 +73,22 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule implements 
           if(url.startsWith("http")) {
             intent.setData(Uri.parse(url));
           } else if(url.startsWith("intent:")) {
-            intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-            if (getReactApplicationContext().getPackageManager().getLaunchIntentForPackage(intent.getPackage()) == null) {
-              intent = new Intent(Intent.ACTION_VIEW);
-              intent.setData(Uri.parse("market://details?id="+intent.getPackage()));
-            }
+              Pattern pattern = Pattern.compile("package=([^;]*)");
+              Matcher matcher = pattern.matcher(url);
+              if (matcher.find()) {
+                  String packageName = matcher.group(1);
+
+                  if (getReactApplicationContext().getPackageManager().getLaunchIntentForPackage(packageName) == null) {
+                      intent.setData(Uri.parse("market://details?id="+packageName));
+                  }else {
+                      intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                  }
+              }else{
+                  return;
+              }
+
+          }else{
+              return;
           }
         }
         if (params.hasKey(ATTR_TYPE)) {
