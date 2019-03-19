@@ -6,9 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -52,7 +49,7 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule implements 
      * getReactApplicationContext().startActivity(intent);
      */
     @ReactMethod
-    public void startActivity(ReadableMap params, final Promise promise) throws Exception {
+    public void startActivity(ReadableMap params, final Promise promise) {
         this.promise = promise;
         Intent intent = new Intent();
 
@@ -69,27 +66,7 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule implements 
             intent.setAction(params.getString(ATTR_ACTION));
         }
         if (params.hasKey(ATTR_DATA)) {
-          String url = params.getString(ATTR_DATA);
-          if(url.startsWith("http")) {
-            intent.setData(Uri.parse(url));
-          } else if(url.startsWith("intent:")) {
-              Pattern pattern = Pattern.compile("package=([^;]*)");
-              Matcher matcher = pattern.matcher(url);
-              if (matcher.find()) {
-                  String packageName = matcher.group(1);
-
-                  if (getReactApplicationContext().getPackageManager().getLaunchIntentForPackage(packageName) == null) {
-                      intent.setData(Uri.parse("market://details?id="+packageName));
-                  }else {
-                      intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-                  }
-              }else{
-                  return;
-              }
-
-          }else{
-              return;
-          }
+            intent.setData(Uri.parse(params.getString(ATTR_DATA)));
         }
         if (params.hasKey(ATTR_TYPE)) {
             intent.setType(params.getString(ATTR_TYPE));
