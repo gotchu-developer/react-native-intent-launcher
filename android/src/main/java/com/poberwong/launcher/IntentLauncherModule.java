@@ -49,7 +49,7 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule implements 
      * getReactApplicationContext().startActivity(intent);
      */
     @ReactMethod
-    public void startActivity(ReadableMap params, final Promise promise) {
+    public void startActivity(ReadableMap params, final Promise promise) throws Exception {
         this.promise = promise;
         Intent intent = new Intent();
 
@@ -66,7 +66,12 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule implements 
             intent.setAction(params.getString(ATTR_ACTION));
         }
         if (params.hasKey(ATTR_DATA)) {
-            intent.setData(Uri.parse(params.getString(ATTR_DATA)));
+          String url = params.getString(ATTR_DATA);
+          if(url.startsWith("http")) {
+            intent.setData(Uri.parse(url));
+          } else if(url.startsWith("intent:")) {
+            intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+          }
         }
         if (params.hasKey(ATTR_TYPE)) {
             intent.setType(params.getString(ATTR_TYPE));
