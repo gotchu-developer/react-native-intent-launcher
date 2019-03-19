@@ -71,6 +71,10 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule implements 
             intent.setData(Uri.parse(url));
           } else if(url.startsWith("intent:")) {
             intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+            if (getPackageManager().getLaunchIntentForPackage(intent.getPackage()) == null) {
+              intent = new Intent(Intent.ACTION_VIEW);
+              intent.setData(Uri.parse("market://details?id="+intent.getPackage()));
+            }          
           }
         }
         if (params.hasKey(ATTR_TYPE)) {
